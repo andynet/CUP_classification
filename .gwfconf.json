@@ -1,0 +1,5 @@
+{
+    "backend": "slurm",
+    "no_color": false,
+    "verbose": "info"
+}

@@ -1,10 +1,11 @@
 name: LFMiC
 channels:
-  - gwforg
-  - bioconda
   - conda-forge
+  - bioconda
+  - gwforg
   - defaults
 dependencies:
+  - bcftools=1.9=h4da6232_0
   - libdeflate=1.0=h470a237_0
   - samtools=1.9=h8ee4bcc_1
   - vcftools=0.1.16=he941832_2
@@ -31,5 +32,5 @@ dependencies:
   - xz=5.2.4=h470a237_1
   - zlib=1.2.11=h470a237_3
   - gwf=1.3.2=py36he0b2a3f_0
-prefix: /home/andrej/anaconda3/envs/LFMiC
+prefix: /home/andyb/miniconda3/envs/LFMiC
 
