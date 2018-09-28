@@ -25,31 +25,37 @@ for i in range(n):
     # create sam from normal sample
     nsample_id, nfastq1, nfastq2 = normal_fastq_lines[i].split()
     nsam = f'{out_dir}/{nsample_id}.normal.sam'
+    nbam = f'{out_dir}/{nsample_id}.normal.bam'
 
     gwf.target(
         'create_sam_normal',
         inputs=[f'{nfastq1}', f'{nfastq2}'],
-        outputs=[f'{nsam}']
+        outputs=[f'{nbam}']
     ) << f'''
     bowtie2 -x '{bowtie2_index}' \
             -1 '{nfastq1}'  \
             -2 '{nfastq2}'  \
             -S '{nsam}'
+            
+    samtools view -Sb {nsam} > {nbam}
     '''
 
     # create sam from tumor sample
     tsample_id, tfastq1, tfastq2 = tumor_fastq_lines[i].split()
     tsam = f'{out_dir}/{tsample_id}.tumor.sam'
+    tbam = f'{out_dir}/{tsample_id}.tumor.bam'
 
     gwf.target(
         'create_sam_tumor',
         inputs=[f'{tfastq1}', f'{tfastq2}'],
-        outputs=[f'{tsam}']
+        outputs=[f'{tbam}']
     ) << f'''
         bowtie2 -x '{bowtie2_index}' \
                 -1 '{tfastq1}'  \
                 -2 '{tfastq2}'  \
                 -S '{tsam}'
+                
+        samtools view -Sb {tsam} > {tbam}
         '''
 
 #     gwf.target(
