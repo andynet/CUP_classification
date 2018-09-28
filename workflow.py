@@ -2,7 +2,7 @@ from gwf import Workflow
 
 gwf = Workflow()
 
-working_directory = '/faststorage/project/CUP_classification/faststorage/Andrej'
+working_directory = '/faststorage/project/CUP_classification/Andrej'
 
 reference_genome = f'{working_directory}/hg38.fa'
 bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
