@@ -5,7 +5,7 @@ gwf = Workflow()
 working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
 
 reference_genome = f'{working_directory}/hg38.fa'
-bowtie2_index = f'{working_directory}/bowtie2_index/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.bowtie_index'
+bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
 normal_fastq = f'{working_directory}/normal_fastq_files.txt'
 tumor_fastq = f'{working_directory}/tumor_fastq_files.txt'
 bed_file = f'{working_directory}/covered_regions.bed'
