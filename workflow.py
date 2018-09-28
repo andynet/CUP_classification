@@ -26,7 +26,7 @@ for i in range(n):
 
     gwf.target(
         'create_bam',
-        inputs=[f'{fastq1}', f'{fastq2}', f'{bowtie2_index}'],
+        inputs=[f'{fastq1}', f'{fastq2}', f'{bowtie2_index}.1.bt2'],
         outputs=[f'{sam}']
     ) << f'''
     bowtie2 -x f'{bowtie2_index}' \
