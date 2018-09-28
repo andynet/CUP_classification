@@ -9,15 +9,11 @@ normal_fastq = f'{working_directory}/normal_fastq_files.txt'
 tumor_fastq = f'{working_directory}/tumor_fastq_files.txt'
 
 reference_genome = f'{working_directory}/inputs/hg38.fa'
-bowtie2_index = f'{working_directory}/bowtie2_index/hg38.1.bt2'
+bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
 bed_file = f'{working_directory}/inputs/covered_regions.bed'
 
 out_dir = f'{working_directory}/outputs'
 n = 1
-
-if not os.path.isfile(bowtie2_index):
-    print('Why?')
-    exit()
 
 with open(normal_fastq) as f:
     normal_fastq_lines = f.readlines()
@@ -32,13 +28,10 @@ for i in range(n):
 
     gwf.target(
         'create_bam',
-        inputs=[f'{fastq1}', f'{fastq2}', f'{bowtie2_index}'],
+        inputs=[f'{fastq1}', f'{fastq2}'],
         outputs=[f'{sam}']
     ) << f'''
-    INDEX={bowtie2_index}
-    INDEX=${{INDEX%%.*}}
-
-    bowtie2 -x ${{INDEX}} \
+    bowtie2 -x '{bowtie2_index}' \
             -1 '{fastq1}'  \
             -2 '{fastq2}'  \
             -S '{sam}'
