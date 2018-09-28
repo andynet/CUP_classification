@@ -2,7 +2,7 @@ from gwf import Workflow
 
 gwf = Workflow()
 
-working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
+working_directory = '/faststorage/project/CUP_classification/faststorage/Andrej'
 
 reference_genome = f'{working_directory}/hg38.fa'
 bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
@@ -26,7 +26,7 @@ for i in range(n):
 
     gwf.target(
         'create_bam',
-        inputs=[f'{fastq1}', f'{fastq2}', f'{bowtie2_index}.1.bt2'],
+        inputs=[f'{fastq1}', f'{fastq2}'],
         outputs=[f'{sam}']
     ) << f'''
     bowtie2 -x f'{bowtie2_index}' \
