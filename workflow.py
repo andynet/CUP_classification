@@ -27,7 +27,7 @@ for i in range(n):
     nsam = f'{out_dir}/{nsample_id}.normal.sam'
 
     gwf.target(
-        'create_bam',
+        'create_sam_normal',
         inputs=[f'{nfastq1}', f'{nfastq2}'],
         outputs=[f'{nsam}']
     ) << f'''
@@ -42,7 +42,7 @@ for i in range(n):
     tsam = f'{out_dir}/{tsample_id}.tumor.sam'
 
     gwf.target(
-        'create_bam',
+        'create_sam_tumor',
         inputs=[f'{tfastq1}', f'{tfastq2}'],
         outputs=[f'{tsam}']
     ) << f'''
