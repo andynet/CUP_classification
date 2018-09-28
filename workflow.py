@@ -5,7 +5,7 @@ gwf = Workflow()
 working_directory = '/faststorage/project/CUP_classification/Andrej'
 
 reference_genome = f'{working_directory}/hg38.fa'
-bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
+bowtie2_index = f'/faststorage/project/CUP_classification/Andrej/bowtie2_index/hg38'
 normal_fastq = f'{working_directory}/normal_fastq_files.txt'
 tumor_fastq = f'{working_directory}/tumor_fastq_files.txt'
 bed_file = f'{working_directory}/covered_regions.bed'
@@ -29,6 +29,8 @@ for i in range(n):
         inputs=[f'{fastq1}', f'{fastq2}'],
         outputs=[f'{sam}']
     ) << f'''
+    echo f'{bowtie2_index}'
+    
     bowtie2 -x f'{bowtie2_index}' \
             -1 f'{fastq1}'  \
             -2 f'{fastq2}'  \
