@@ -35,10 +35,10 @@ for i in range(n):
         inputs=[f'{fastq1}', f'{fastq2}', f'{bowtie2_index}'],
         outputs=[f'{sam}']
     ) << f'''
-    echo '{bowtie2_index}'
-    echo ${{'{bowtie2_index}'%%.*}}
+    INDEX={bowtie2_index}
+    INDEX=${{INDEX%%.*}}
 
-    bowtie2 -x ${{'{bowtie2_index}'%%.*}} \
+    bowtie2 -x ${{INDEX}} \
             -1 '{fastq1}'  \
             -2 '{fastq2}'  \
             -S '{sam}'
