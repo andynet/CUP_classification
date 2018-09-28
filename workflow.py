@@ -1,5 +1,4 @@
 from gwf import Workflow
-import os.path
 
 gwf = Workflow()
 
@@ -23,19 +22,35 @@ with open(tumor_fastq) as f:
 
 for i in range(n):
 
-    sample_id, fastq1, fastq2 = normal_fastq_lines[i].split()
-    sam = f'{out_dir}/{sample_id}.normal.sam'
+    # create sam from normal sample
+    nsample_id, nfastq1, nfastq2 = normal_fastq_lines[i].split()
+    nsam = f'{out_dir}/{nsample_id}.normal.sam'
 
     gwf.target(
         'create_bam',
-        inputs=[f'{fastq1}', f'{fastq2}'],
-        outputs=[f'{sam}']
+        inputs=[f'{nfastq1}', f'{nfastq2}'],
+        outputs=[f'{nsam}']
     ) << f'''
     bowtie2 -x '{bowtie2_index}' \
-            -1 '{fastq1}'  \
-            -2 '{fastq2}'  \
-            -S '{sam}'
+            -1 '{nfastq1}'  \
+            -2 '{nfastq2}'  \
+            -S '{nsam}'
     '''
+
+    # create sam from tumor sample
+    tsample_id, tfastq1, tfastq2 = tumor_fastq_lines[i].split()
+    tsam = f'{out_dir}/{tsample_id}.tumor.sam'
+
+    gwf.target(
+        'create_bam',
+        inputs=[f'{tfastq1}', f'{tfastq2}'],
+        outputs=[f'{tsam}']
+    ) << f'''
+        bowtie2 -x '{bowtie2_index}' \
+                -1 '{tfastq1}'  \
+                -2 '{tfastq2}'  \
+                -S '{tsam}'
+        '''
 
 #     gwf.target(
 #         'create_vcf',
