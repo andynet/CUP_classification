@@ -25,17 +25,24 @@ for i in range(n):
     sam = f'{out_dir}/{sample_id}.normal.sam'
 
     gwf.target(
-        'create_bam',
+        'test',
         inputs=[f'{fastq1}', f'{fastq2}'],
-        outputs=[f'{sam}']
+        outputs=['test.txt']
     ) << f'''
-    echo f'{bowtie2_index}'
-    
-    bowtie2 -x f'{bowtie2_index}' \
-            -1 f'{fastq1}'  \
-            -2 f'{fastq2}'  \
-            -S f'{sam}'
+        echo f'{fastq1}' f'{fastq2}' > test.txt 
     '''
+    # gwf.target(
+    #     'create_bam',
+    #     inputs=[f'{fastq1}', f'{fastq2}'],
+    #     outputs=[f'{sam}']
+    # ) << f'''
+    # echo f'{bowtie2_index}'
+    #
+    # bowtie2 -x f'{bowtie2_index}' \
+    #         -1 f'{fastq1}'  \
+    #         -2 f'{fastq2}'  \
+    #         -S f'{sam}'
+    # '''
 
 #     gwf.target(
 #         'create_vcf',
