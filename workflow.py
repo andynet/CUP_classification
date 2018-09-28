@@ -1,17 +1,23 @@
 from gwf import Workflow
+import os.path
 
 gwf = Workflow()
 
-working_directory = '/faststorage/project/CUP_classification/Andrej'
+working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
 
-reference_genome = f'{working_directory}/hg38.fa'
-bowtie2_index = f'/faststorage/project/CUP_classification/Andrej/bowtie2_index/hg38'
 normal_fastq = f'{working_directory}/normal_fastq_files.txt'
 tumor_fastq = f'{working_directory}/tumor_fastq_files.txt'
-bed_file = f'{working_directory}/covered_regions.bed'
+
+reference_genome = f'{working_directory}/inputs/hg38.fa'
+bowtie2_index = f'{working_directory}/bowtie2_index/hg38.1.bt2'
+bed_file = f'{working_directory}/inputs/covered_regions.bed'
 
 out_dir = f'{working_directory}/outputs'
 n = 1
+
+if not os.path.isfile(bowtie2_index):
+    print('Why?')
+    exit()
 
 with open(normal_fastq) as f:
     normal_fastq_lines = f.readlines()
@@ -25,24 +31,18 @@ for i in range(n):
     sam = f'{out_dir}/{sample_id}.normal.sam'
 
     gwf.target(
-        'test',
-        inputs=[f'{fastq1}', f'{fastq2}'],
-        outputs=['test.txt']
+        'create_bam',
+        inputs=[f'{fastq1}', f'{fastq2}', f'{bowtie2_index}'],
+        outputs=[f'{sam}']
     ) << f'''
-        echo f'{fastq1}' f'{fastq2}' > test.txt 
+    echo '{bowtie2_index}'
+    echo ${{'{bowtie2_index}'%%.*}}
+
+    bowtie2 -x ${{'{bowtie2_index}'%%.*}} \
+            -1 '{fastq1}'  \
+            -2 '{fastq2}'  \
+            -S '{sam}'
     '''
-    # gwf.target(
-    #     'create_bam',
-    #     inputs=[f'{fastq1}', f'{fastq2}'],
-    #     outputs=[f'{sam}']
-    # ) << f'''
-    # echo f'{bowtie2_index}'
-    #
-    # bowtie2 -x f'{bowtie2_index}' \
-    #         -1 f'{fastq1}'  \
-    #         -2 f'{fastq2}'  \
-    #         -S f'{sam}'
-    # '''
 
 #     gwf.target(
 #         'create_vcf',
