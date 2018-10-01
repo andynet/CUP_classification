@@ -23,14 +23,22 @@ with open(tumor_fastq) as f:
 locations = [normal_fastq_lines, tumor_fastq_lines]
 
 for i in range(n):
+
+    sample_ids = []
+    vcfs = []
+
     for j, stype in enumerate(['normal', 'tumor']):
 
-        # <editor-fold desc="fastq to bam">
         sample_id, fastq1, fastq2 = locations[j][i].split()
         sam = f'{out_dir}/{sample_id}.{stype}.sam'
         sbam = f'{out_dir}/{sample_id}.{stype}.sorted.bam'
         ibam = f'{out_dir}/{sample_id}.{stype}.sorted.bam.bai'
+        vcf = f'{out_dir}/{sample_id}.{stype}.vcf'
 
+        sample_ids.append(sample_id)
+        vcfs.append(vcf)
+
+        # <editor-fold desc="fastq to bam">
         gwf.target(
             f'{sample_id}.{stype}.sorted.bam',
             inputs=[f'{fastq1}', f'{fastq2}'],
@@ -48,28 +56,27 @@ for i in range(n):
         # </editor-fold>
 
         # <editor-fold desc="bam to vcf">
-        vcf = f'{out_dir}/{sample_id}.{stype}.vcf'
-
         gwf.target(
             f'{sample_id}.{stype}.vcf',
             inputs=[f'{reference_genome}', f'{sbam}'],
             outputs=[f'{vcf}'],
             walltime="12:00:00", memory="32g"
         ) << f"""
-                samtools mpileup    \
-                    -u -tAD     \
-                    -f {reference_genome}   \
-                    -l {bed_file}    \
-                    {sbam} | bcftools view -v snps -m2 > {vcf}
-                """
+        samtools mpileup    \
+                -u -tAD     \
+                -f {reference_genome}   \
+                -l {bed_file}    \
+                {sbam} | bcftools view -v snps -m2 > {vcf}
+        """
         # </editor-fold>
 
-
-#
-# gwf.target(
-#     'filter_noncancer_variants',
-#     inputs=[f'{samples_vcf[0]}', f'{samples_vcf[1]}'],
-#     outputs=[f'{filtered_vcf}']) \
-#     << f"""
-#     vcftools {samples_vcf[1]} --diff {samples_vcf[0]} --diff-site --out {filtered_vcf}
-#     """
+    # # <editor-fold desc="filter variants">
+    # final_vcf = f'{sample_ids[0]}_{sample_ids[1]}.vcf'
+    # gwf.target(
+    #     'filter_variants',
+    #     inputs=[f'{vcfs[0]}', f'{vcfs[1]}'],
+    #     outputs=[f'{final_vcf}']
+    # ) << f"""
+    # vcftools --vcf {vcfs[1]} --diff {vcfs[0]} --diff-site --out {final_vcf}
+    # """
+    # # </editor-fold>
