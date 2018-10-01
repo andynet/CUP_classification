@@ -30,7 +30,8 @@ for i in range(n):
     gwf.target(
         'create_sam_normal',
         inputs=[f'{nfastq1}', f'{nfastq2}'],
-        outputs=[f'{nbam}']
+        outputs=[f'{nbam}'], 
+        walltime="12:00:00", memory="32g"
     ) << f'''
     bowtie2 -x '{bowtie2_index}' \
             -1 '{nfastq1}'  \
@@ -48,7 +49,8 @@ for i in range(n):
     gwf.target(
         'create_sam_tumor',
         inputs=[f'{tfastq1}', f'{tfastq2}'],
-        outputs=[f'{tbam}']
+        outputs=[f'{tbam}'], 
+        walltime="12:00:00", memory="32g"
     ) << f'''
         bowtie2 -x '{bowtie2_index}' \
                 -1 '{tfastq1}'  \
