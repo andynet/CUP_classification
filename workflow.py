@@ -32,7 +32,7 @@ for i in range(n):
         ibam = f'{out_dir}/{sample_id}.{stype}.sorted.bam.bai'
 
         gwf.target(
-            'create_bam',
+            f'{sample_id}.{stype}.sorted.bam',
             inputs=[f'{fastq1}', f'{fastq2}'],
             outputs=[f'{sbam}', f'{ibam}'],
             walltime="12:00:00", memory="32g"
@@ -51,7 +51,7 @@ for i in range(n):
         vcf = f'{out_dir}/{sample_id}.{stype}.vcf'
 
         gwf.target(
-            'create_vcf',
+            f'{sample_id}.{stype}.vcf',
             inputs=[f'{reference_genome}', f'{sbam}'],
             outputs=[f'{vcf}'],
             walltime="12:00:00", memory="32g"
