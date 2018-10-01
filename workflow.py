@@ -22,7 +22,7 @@ with open(tumor_fastq) as f:
 
 for i in range(n):
 
-    # create sam from normal sample
+    # <editor-fold desc="create bam from normal samples">
     nsample_id, nfastq1, nfastq2 = normal_fastq_lines[i].split()
     nsam = f'{out_dir}/{nsample_id}.normal.sam'
     nbam = f'{out_dir}/{nsample_id}.normal.bam'
@@ -40,8 +40,25 @@ for i in range(n):
             
     samtools view -Sb {nsam} > {nbam}
     '''
+    # </editor-fold>
 
-    # create sam from tumor sample
+    # # <editor-fold desc="create vcf from normal samples">
+    # nvcf = f'{out_dir}/{nsample_id}.normal.vcf'
+    #
+    # gwf.target(
+    #     'create_vcf_normal',
+    #     inputs=[f'{reference_genome}', f'{nbam}'],
+    #     outputs=[f'{nvcf}']) \
+    # << f"""
+    #         samtools mpileup    \
+    #             -u -tAD     \
+    #             -f {reference_genome}   \
+    #             -l {bed_file}    \
+    #             {nbam} | bcftools view -v snps -m2
+    #         """
+    # # </editor-fold>
+
+    # <editor-fold desc="create bam from tumor samples">
     tsample_id, tfastq1, tfastq2 = tumor_fastq_lines[i].split()
     tsam = f'{out_dir}/{tsample_id}.tumor.sam'
     tbam = f'{out_dir}/{tsample_id}.tumor.bam'
@@ -59,15 +76,8 @@ for i in range(n):
                 
         samtools view -Sb {tsam} > {tbam}
         '''
+    # </editor-fold>
 
-#     gwf.target(
-#         'create_vcf',
-#         inputs=[f'{ref_genome}', f'{samples_bam[i]}'],
-#         outputs=[f'{samples_vcf[i]}']) \
-#         << f"""
-#         samtools mpileup -u -f {ref_genome} {samples_bam[i]} | bcftools view -v -c - > {samples_vcf[i]}
-#         samtools mpileup -u -tAD -f hg38.fa -l {bedfile}  {bamfile} | bcftools view -v snps -m2
-#         """
 #
 # gwf.target(
 #     'filter_noncancer_variants',
