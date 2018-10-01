@@ -20,63 +20,50 @@ with open(normal_fastq) as f:
 with open(tumor_fastq) as f:
     tumor_fastq_lines = f.readlines()
 
+locations = [normal_fastq_lines, tumor_fastq_lines]
+
 for i in range(n):
+    for j, stype in enumerate(['normal', 'tumor']):
 
-    # <editor-fold desc="create bam from normal samples">
-    nsample_id, nfastq1, nfastq2 = normal_fastq_lines[i].split()
-    nsam = f'{out_dir}/{nsample_id}.normal.sam'
-    nbam = f'{out_dir}/{nsample_id}.normal.bam'
+        # <editor-fold desc="fastq to bam">
+        sample_id, fastq1, fastq2 = locations[j][i].split()
+        sam = f'{out_dir}/{sample_id}.{stype}.sam'
+        sbam = f'{out_dir}/{sample_id}.{stype}.sorted.bam'
+        ibam = f'{out_dir}/{sample_id}.{stype}.sorted.bam.bai'
 
-    gwf.target(
-        'create_sam_normal',
-        inputs=[f'{nfastq1}', f'{nfastq2}'],
-        outputs=[f'{nbam}'], 
-        walltime="12:00:00", memory="32g"
-    ) << f'''
-    bowtie2 -x '{bowtie2_index}' \
-            -1 '{nfastq1}'  \
-            -2 '{nfastq2}'  \
-            -S '{nsam}'
-            
-    samtools view -Sb {nsam} > {nbam}
-    '''
-    # </editor-fold>
-
-    # # <editor-fold desc="create vcf from normal samples">
-    # nvcf = f'{out_dir}/{nsample_id}.normal.vcf'
-    #
-    # gwf.target(
-    #     'create_vcf_normal',
-    #     inputs=[f'{reference_genome}', f'{nbam}'],
-    #     outputs=[f'{nvcf}']) \
-    # << f"""
-    #         samtools mpileup    \
-    #             -u -tAD     \
-    #             -f {reference_genome}   \
-    #             -l {bed_file}    \
-    #             {nbam} | bcftools view -v snps -m2
-    #         """
-    # # </editor-fold>
-
-    # <editor-fold desc="create bam from tumor samples">
-    tsample_id, tfastq1, tfastq2 = tumor_fastq_lines[i].split()
-    tsam = f'{out_dir}/{tsample_id}.tumor.sam'
-    tbam = f'{out_dir}/{tsample_id}.tumor.bam'
-
-    gwf.target(
-        'create_sam_tumor',
-        inputs=[f'{tfastq1}', f'{tfastq2}'],
-        outputs=[f'{tbam}'], 
-        walltime="12:00:00", memory="32g"
-    ) << f'''
+        gwf.target(
+            'create_bam',
+            inputs=[f'{fastq1}', f'{fastq2}'],
+            outputs=[f'{sbam}', f'{ibam}'],
+            walltime="12:00:00", memory="32g"
+        ) << f'''
         bowtie2 -x '{bowtie2_index}' \
-                -1 '{tfastq1}'  \
-                -2 '{tfastq2}'  \
-                -S '{tsam}'
-                
-        samtools view -Sb {tsam} > {tbam}
+                -1 '{fastq1}'  \
+                -2 '{fastq2}'  \
+                -S '{sam}'
+            
+        samtools sort {sam} > {sbam}
+        samtools index {sbam}
         '''
-    # </editor-fold>
+        # </editor-fold>
+
+        # <editor-fold desc="bam to vcf">
+        vcf = f'{out_dir}/{sample_id}.{stype}.vcf'
+
+        gwf.target(
+            'create_vcf',
+            inputs=[f'{reference_genome}', f'{sbam}'],
+            outputs=[f'{vcf}'],
+            walltime="12:00:00", memory="32g"
+        ) << f"""
+                samtools mpileup    \
+                    -u -tAD     \
+                    -f {reference_genome}   \
+                    -l {bed_file}    \
+                    {sbam} | bcftools view -v snps -m2 > {vcf}
+                """
+        # </editor-fold>
+
 
 #
 # gwf.target(
