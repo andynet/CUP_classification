@@ -1,10 +1,16 @@
 from gwf import Workflow
 
 gwf = Workflow(defaults={
-    'queue': 'express',
-    'account': 'CUP_classification',
-    'walltime': '0:30:00',
-    'memory': '8g',
+    "cores": 1,
+    "memory": "8g",
+    "walltime": "00:30:00",
+    "nodes": None,
+    "queue": "express",
+    "account": "CUP_classification",
+    "constraint": None,
+    "mail_type": None,
+    "mail_user": None,
+    "qos": None,
 })
 
 working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
@@ -43,6 +49,7 @@ for i in range(n):
         tsv = f'{out_dir}/{sample_id}.{stype}.vcf.tsv'
 
         sample_ids.append(sample_id)
+        vcfs.append(vcf)
         tsvs.append(tsv)
 
         # <editor-fold desc="fastq to bam">
@@ -95,5 +102,21 @@ for i in range(n):
         outputs=[f'{final_tsv}'],
     ) << f"""
     comm -13 {tsvs[0]} {tsvs[1]} > {final_tsv}
+    """
+    # </editor-fold>
+
+    # <editor-fold desc="create vcf">
+    final_vcf = f'{out_dir}/{file_name}.vcf'
+    gwf.target(
+        f'{file_name}.vcf',
+        inputs=[f'{vcfs[1]}', f'{final_tsv}'],
+        outputs=[f'{final_vcf}'],
+    ) << f"""
+    <{vcfs[1]} grep "^#" > {final_vcf}
+    
+    join -j1 -t$'\t' -o1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11 \
+        <(<{vcfs[1]} grep -v '^#' | awk '{{print $1"-"$2"-"$4"-"$5"\t"$0}}' | sort -k1,1) \
+        <(<{final_tsv} awk '{{print $1"-"$2"-"$3"-"$4"\t"$0}}' | sort -k1,1) \
+        >> {final_vcf}
     """
     # </editor-fold>
