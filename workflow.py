@@ -1,11 +1,11 @@
 from gwf import Workflow
 
 gwf = Workflow(defaults={
-    "cores": 1,
-    "memory": "8g",
-    "walltime": "00:30:00",
+    "cores": 16,
+    "memory": "32g",
+    "walltime": "24:00:00",
     "nodes": None,
-    "queue": "express",
+    "queue": "normal",
     "account": "CUP_classification",
     "constraint": None,
     "mail_type": None,
@@ -23,7 +23,9 @@ bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
 bed_file = f'{working_directory}/inputs/covered_regions.bed'
 
 out_dir = f'{working_directory}/outputs'
-n = 1
+start = 0
+end = 1
+threads = 8
 
 with open(normal_fastq) as f:
     normal_fastq_lines = f.readlines()
@@ -33,7 +35,7 @@ with open(tumor_fastq) as f:
 
 locations = [normal_fastq_lines, tumor_fastq_lines]
 
-for i in range(n):
+for i in range(start, end):
 
     sample_ids = []
     vcfs = []
@@ -56,14 +58,15 @@ for i in range(n):
         gwf.target(
             f'{sample_id}.{stype}.sorted.bam',
             inputs=[f'{fastq1}', f'{fastq2}'],
-            outputs=[f'{sbam}', f'{ibam}'],
+            outputs=[f'{sbam}'],
+            options={'cores': threads},
         ) << f'''
-        bowtie2 -x '{bowtie2_index}' \
-                -1 '{fastq1}'  \
-                -2 '{fastq2}'  \
-                -S '{sam}'
-            
-        samtools sort {sam} > {sbam}
+        bowtie2 --threads {threads}                                                                                     \
+                -x {bowtie2_index}                                                                                      \
+                -1 {fastq1}                                                                                             \
+                -2 {fastq2}                                                                                             \
+        | samtools sort -@ {threads} - > {sbam}
+           
         samtools index {sbam}
         '''
         # </editor-fold>
@@ -74,10 +77,10 @@ for i in range(n):
             inputs=[f'{reference_genome}', f'{sbam}'],
             outputs=[f'{vcf}'],
         ) << f"""
-        samtools mpileup    \
-                -u -tAD     \
-                -f {reference_genome}   \
-                -l {bed_file}    \
+        samtools mpileup                                                                                                \
+                -u -tAD                                                                                                 \
+                -f {reference_genome}                                                                                   \
+                -l {bed_file}                                                                                           \
                 {sbam} | bcftools view -v snps -m2 > {vcf}
         """
         # </editor-fold>
@@ -105,7 +108,7 @@ for i in range(n):
     """
     # </editor-fold>
 
-    # <editor-fold desc="create vcf">
+    # <editor-fold desc="create final vcf">
     final_vcf = f'{out_dir}/{file_name}.vcf'
     gwf.target(
         f'{file_name}.vcf',
@@ -114,9 +117,9 @@ for i in range(n):
     ) << f"""
     <{vcfs[1]} grep "^#" > {final_vcf}
     
-    join -j1 -t$'\t' -o1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11 \
-        <(<{vcfs[1]} grep -v '^#' | awk '{{print $1"-"$2"-"$4"-"$5"\t"$0}}' | sort -k1,1) \
-        <(<{final_tsv} awk '{{print $1"-"$2"-"$3"-"$4"\t"$0}}' | sort -k1,1) \
+    join -j1 -t$'\t' -o1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11                                                        \
+        <(<{vcfs[1]} grep -v '^#' | awk '{{print $1"-"$2"-"$4"-"$5"\t"$0}}' | sort -k1,1)                               \
+        <(<{final_tsv} awk '{{print $1"-"$2"-"$3"-"$4"\t"$0}}' | sort -k1,1)                                            \
         >> {final_vcf}
     """
     # </editor-fold>
