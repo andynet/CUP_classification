@@ -70,13 +70,20 @@ for i in range(n):
         """
         # </editor-fold>
 
-    # # <editor-fold desc="filter variants">
-    # final_vcf = f'{sample_ids[0]}_{sample_ids[1]}.vcf'
-    # gwf.target(
-    #     'filter_variants',
-    #     inputs=[f'{vcfs[0]}', f'{vcfs[1]}'],
-    #     outputs=[f'{final_vcf}']
-    # ) << f"""
-    # vcftools --vcf {vcfs[1]} --diff {vcfs[0]} --diff-site --out {final_vcf}
-    # """
-    # # </editor-fold>
+    # <editor-fold desc="filter variants">
+    sample_normal_tsv = f'{sample_ids[0]}.vcf.tsv'
+    sample_tumor_tsv = f'{sample_ids[1]}.vcf.tsv'
+    final_tsv = f'{sample_ids[1]}_tumor-{sample_ids[1]}_normal.tsv'
+
+    gwf.target(
+        'filter_variants',
+        inputs=[f'{vcfs[0]}', f'{vcfs[1]}'],
+        outputs=[f'{final_tsv}'],
+        walltime="12:00:00", memory="32g"
+    ) << f"""
+    less {vcfs[0]} | grep -v '^#' | cut -d$'\t' -f1,2,4,5 | sort > {sample_normal_tsv}
+    less {vcfs[1]} | grep -v '^#' | cut -d$'\t' -f1,2,4,5 | sort > {sample_tumor_tsv}
+    
+    comm -13 {sample_normal_tsv} {sample_tumor_tsv} > {final_tsv}
+    """
+    # </editor-fold>
