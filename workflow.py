@@ -1,9 +1,10 @@
 from gwf import Workflow
 
 gwf = Workflow(defaults={
+    'queue': 'express',
     'account': 'CUP_classification',
-    'walltime': '12:00:00',
-    'memory': '32g'
+    'walltime': '0:30:00',
+    'memory': '8g',
 })
 
 working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
@@ -16,7 +17,7 @@ bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
 bed_file = f'{working_directory}/inputs/covered_regions.bed'
 
 out_dir = f'{working_directory}/outputs'
-n = 2
+n = 1
 
 with open(normal_fastq) as f:
     normal_fastq_lines = f.readlines()
