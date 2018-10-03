@@ -1,6 +1,10 @@
 from gwf import Workflow
 
-gwf = Workflow()
+gwf = Workflow(defaults={
+    'account': 'CUP_classification',
+    'walltime': '12:00:00',
+    'memory': '32g'
+})
 
 working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
 
@@ -43,7 +47,6 @@ for i in range(n):
             f'{sample_id}.{stype}.sorted.bam',
             inputs=[f'{fastq1}', f'{fastq2}'],
             outputs=[f'{sbam}', f'{ibam}'],
-            walltime="12:00:00", memory="32g"
         ) << f'''
         bowtie2 -x '{bowtie2_index}' \
                 -1 '{fastq1}'  \
@@ -60,7 +63,6 @@ for i in range(n):
             f'{sample_id}.{stype}.vcf',
             inputs=[f'{reference_genome}', f'{sbam}'],
             outputs=[f'{vcf}'],
-            walltime="12:00:00", memory="32g"
         ) << f"""
         samtools mpileup    \
                 -u -tAD     \
@@ -79,7 +81,6 @@ for i in range(n):
         'filter_variants',
         inputs=[f'{vcfs[0]}', f'{vcfs[1]}'],
         outputs=[f'{final_tsv}'],
-        walltime="12:00:00", memory="32g"
     ) << f"""
     less {vcfs[0]} | grep -v '^#' | cut -d$'\t' -f1,2,4,5 | sort > {sample_normal_tsv}
     less {vcfs[1]} | grep -v '^#' | cut -d$'\t' -f1,2,4,5 | sort > {sample_tumor_tsv}
