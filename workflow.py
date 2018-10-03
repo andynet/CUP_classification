@@ -73,14 +73,14 @@ for i in range(n):
         # </editor-fold>
 
     # <editor-fold desc="filter variants">
-    sample_normal_tsv = f'{sample_ids[0]}.vcf.tsv'
-    sample_tumor_tsv = f'{sample_ids[1]}.vcf.tsv'
-    final_tsv = f'{sample_ids[1]}_tumor_{sample_ids[1]}_normal.tsv'
+    sample_normal_tsv = f'{out_dir}/{sample_ids[0]}.vcf.tsv'
+    sample_tumor_tsv = f'{out_dir}/{sample_ids[1]}.vcf.tsv'
+    final_tsv = f'{out_dir}/{sample_ids[1]}_tumor_{sample_ids[1]}_normal.tsv'
 
     gwf.target(
         f'{final_tsv}',
         inputs=[f'{vcfs[0]}', f'{vcfs[1]}'],
-        outputs=[f'{final_tsv}'],
+        outputs=[f'{sample_normal_tsv}', f'{sample_tumor_tsv}', f'{final_tsv}'],
     ) << f"""
     less {vcfs[0]} | grep -v '^#' | cut -d$'\t' -f1,2,4,5 | sort > {sample_normal_tsv}
     less {vcfs[1]} | grep -v '^#' | cut -d$'\t' -f1,2,4,5 | sort > {sample_tumor_tsv}
