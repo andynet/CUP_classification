@@ -16,7 +16,7 @@ bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
 bed_file = f'{working_directory}/inputs/covered_regions.bed'
 
 out_dir = f'{working_directory}/outputs'
-n = 1
+n = 2
 
 with open(normal_fastq) as f:
     normal_fastq_lines = f.readlines()
@@ -75,10 +75,10 @@ for i in range(n):
     # <editor-fold desc="filter variants">
     sample_normal_tsv = f'{sample_ids[0]}.vcf.tsv'
     sample_tumor_tsv = f'{sample_ids[1]}.vcf.tsv'
-    final_tsv = f'{sample_ids[1]}_tumor-{sample_ids[1]}_normal.tsv'
+    final_tsv = f'{sample_ids[1]}_tumor_{sample_ids[1]}_normal.tsv'
 
     gwf.target(
-        'filter_variants',
+        f'{final_tsv}',
         inputs=[f'{vcfs[0]}', f'{vcfs[1]}'],
         outputs=[f'{final_tsv}'],
     ) << f"""
