@@ -78,7 +78,7 @@ for i in range(n):
     final_tsv = f'{out_dir}/{sample_ids[1]}_tumor_{sample_ids[1]}_normal.tsv'
 
     gwf.target(
-        f'{final_tsv}',
+        f'{sample_ids[1]}_tumor_{sample_ids[1]}_normal.tsv',
         inputs=[f'{vcfs[0]}', f'{vcfs[1]}'],
         outputs=[f'{sample_normal_tsv}', f'{sample_tumor_tsv}', f'{final_tsv}'],
     ) << f"""
