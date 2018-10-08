@@ -23,8 +23,6 @@ bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
 bed_file = f'{working_directory}/inputs/covered_regions.bed'
 
 out_dir = f'{working_directory}/outputs'
-start = 0
-end = 1
 threads = 8
 
 with open(normal_fastq) as f:
@@ -34,6 +32,9 @@ with open(tumor_fastq) as f:
     tumor_fastq_lines = f.readlines()
 
 locations = [normal_fastq_lines, tumor_fastq_lines]
+
+start = 2
+end = len(normal_fastq_lines)
 
 for i in range(start, end):
 
