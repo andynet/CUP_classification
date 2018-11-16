@@ -42,3 +42,20 @@ def create_fasta_dict(fasta):
     '''
 
     return inputs, outputs, options, spec
+
+
+def add_groups(bam):
+
+    grouped_bam = bam.replace('.bam', '.grouped.bam')
+
+    inputs = [f'{bam}']
+    outputs = [f'{grouped_bam}']
+    options = {}
+    spec = f'''
+        picard AddOrReplaceReadGroups                           \
+            I={bam}                                             \
+            O={grouped_bam}                                     \
+            RGID=4 RGLB=lib1 RGPL=illumina RGPU=unit1 RGSM=20   \
+    '''
+
+    return inputs, outputs, options, spec

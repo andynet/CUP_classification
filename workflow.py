@@ -71,12 +71,14 @@ for i in range(start, end):
                 -1 {fastq1}                                                                                             \
                 -2 {fastq2}                                                                                             \
         | samtools sort -@ {threads} - > {sbam}
-           
-        samtools index {sbam}
         '''
         # </editor-fold>
 
-        tmp = filter_reads(sbam, reference_genome)
+        tmp = add_groups(sbam)
+        gwf.target_from_template(f'add_groups_{sample_id}_{stype}', tmp)
+        bam = tmp[1][0]
+
+        tmp = filter_reads(bam, reference_genome)
         gwf.target_from_template(f'filter_{sample_id}_{stype}', tmp)
         final_bam = tmp[1][0]
 
