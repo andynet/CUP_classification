@@ -26,6 +26,8 @@ bed_file = f'{working_directory}/inputs/covered_regions.bed'
 out_dir = f'{working_directory}/outputs'
 threads = 8
 
+gwf.target_from_template('create_fasta_dict', create_fasta_dict(reference_genome))
+
 with open(normal_fastq) as f:
     normal_fastq_lines = f.readlines()
 
