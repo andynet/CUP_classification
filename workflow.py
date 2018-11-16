@@ -1,4 +1,5 @@
 from gwf import Workflow
+from templates import *
 
 gwf = Workflow(defaults={
     "cores": 16,
@@ -71,17 +72,23 @@ for i in range(start, end):
         '''
         # </editor-fold>
 
+        tmp = filter_reads(sbam, reference_genome)
+        gwf.target_from_template(f'filter_{sbam}', tmp)
+        final_bam = tmp[1][0]
+
         # <editor-fold desc="bam to vcf">
         gwf.target(
             f'{sample_id}.{stype}.vcf',
-            inputs=[f'{reference_genome}', f'{sbam}'],
+            inputs=[f'{reference_genome}', f'{final_bam}'],
             outputs=[f'{vcf}'],
         ) << f"""
+        samtools index {final_bam}
+        
         samtools mpileup                                                                                                \
                 -u -tAD                                                                                                 \
                 -f {reference_genome}                                                                                   \
                 -l {bed_file}                                                                                           \
-                {sbam} | bcftools view -v snps -m2 > {vcf}
+                {final_bam} | bcftools view -v snps -m2 > {vcf}
         """
         # </editor-fold>
 

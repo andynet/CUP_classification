@@ -61,6 +61,20 @@ def bowtie2_fq_to_ref(fastq1, fastq2, reference, bam, cores=1, memory='1g'):
     return inputs, outputs, options, spec
 
 
+def notify(mail, file):
+    """Template to notify about successfully created file."""
+
+    inputs = [f'{file}']
+    outputs = [f'{file}.completed']
+    options = {}
+    spec = f"""
+        mail -s 'File {file} completed' {mail} < /dev/null
+        touch '{file}.completed'
+    """
+
+    return inputs, outputs, options, spec
+
+
 def main():
 
     gwf = Workflow()
