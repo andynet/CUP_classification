@@ -59,3 +59,15 @@ def add_groups(bam):
     '''
 
     return inputs, outputs, options, spec
+
+
+def index(bam):
+
+    inputs = [f'{bam}']
+    outputs = [f'{bam}.bai']
+    options = {}
+    spec = f'''
+        samtools index {bam}
+    '''
+
+    return inputs, outputs, options, spec
