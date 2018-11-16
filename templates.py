@@ -71,3 +71,17 @@ def index(bam):
     '''
 
     return inputs, outputs, options, spec
+
+
+def notify(mail, file):
+    """Template to notify about successfully created file."""
+
+    inputs = [f'{file}']
+    outputs = [f'{file}.completed']
+    options = {}
+    spec = f"""
+        echo "{file}" > {file}.completed
+        mail -s 'File completed' {mail} < {file}.completed
+    """
+
+    return inputs, outputs, options, spec
