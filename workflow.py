@@ -16,8 +16,8 @@ gwf = Workflow(defaults={
 
 working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
 
-normal_fastq = f'{working_directory}/normal_fastq_files.txt'
-tumor_fastq = f'{working_directory}/tumor_fastq_files.txt'
+normal_fastq = f'{working_directory}/inputs/normal_fastq_files.txt'
+tumor_fastq = f'{working_directory}/inputs/tumor_fastq_files.txt'
 
 reference_genome = f'{working_directory}/inputs/hg38.fa'
 bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
@@ -34,8 +34,9 @@ with open(tumor_fastq) as f:
 
 locations = [normal_fastq_lines, tumor_fastq_lines]
 
-start = 2
-end = len(normal_fastq_lines)
+start = 0
+# end = len(normal_fastq_lines)
+end = 1
 
 for i in range(start, end):
 
@@ -74,7 +75,7 @@ for i in range(start, end):
         # </editor-fold>
 
         tmp = filter_reads(sbam, reference_genome)
-        gwf.target_from_template(f'filter_{sbam}', tmp)
+        gwf.target_from_template(f'filter_{sample_id}_{stype}', tmp)
         final_bam = tmp[1][0]
 
         # <editor-fold desc="bam to vcf">
