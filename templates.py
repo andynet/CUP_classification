@@ -30,7 +30,7 @@ def filter_reads(bam, ref, cores=16):
 
 def create_fasta_dict(fasta):
 
-    _dict = fasta.replace('.fasta', '') + '.dict'
+    _dict = fasta.replace('.fa', '') + '.dict'
 
     inputs = [f'{fasta}']
     outputs = [f'{_dict}']
