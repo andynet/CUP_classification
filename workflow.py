@@ -138,4 +138,5 @@ for i in range(start, end):
     """
     # </editor-fold>
 
-    gwf.target_from_template(notify('andrejbalaz001@gmail.com', final_vcf))
+    gwf.target_from_template(f'notify_{i}', notify('andrejbalaz001@gmail.com', final_vcf))
+
