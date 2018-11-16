@@ -78,7 +78,7 @@ for i in range(start, end):
         gwf.target_from_template(f'add_groups_{sample_id}_{stype}', tmp)
         bam = tmp[1][0]
 
-        gwf.target_from_template(f'index_{bam}', index(bam))
+        gwf.target_from_template(f'index_{sample_id}_{stype}', index(bam))
         tmp = filter_reads(bam, reference_genome)
         gwf.target_from_template(f'filter_{sample_id}_{stype}', tmp)
         final_bam = tmp[1][0]
