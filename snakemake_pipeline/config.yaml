@@ -1,0 +1,5 @@
+normal_file: 'example/fastq_list.normal.txt'
+tumor_file: 'example/fastq_list.tumor.txt'
+max_lines: 1
+data_dir: '../CUP_classification_data_dir'
+

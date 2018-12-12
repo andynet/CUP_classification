@@ -1,0 +1,136 @@
+configfile: "config.yaml"
+
+include: "scripts/functions.py"
+
+rule main:
+    input:
+        expand("{data_dir}/results/{sample}.vcf",
+                data_dir = config["data_dir"],
+                sample = get_samples(config["normal_file"], config["max_lines"]),
+                ),
+
+rule create_bwa_index:
+    input:
+        "refgenome.fa",
+    output:
+        expand("{data_dir}/reference/{}")
+        "refgenome.amb",
+        "refgenome.ann",
+        "refgenome.pac",
+        "refgenome.sa",
+    shell:
+        """
+        bwa index -p {refdir}/{refGenome} -a bwtsw {refdir}/{refGenome}.fa
+        """
+
+rule map_reads:
+    input:
+        get_file_paths,
+        get_reference_index(config["reference"])
+    output:
+        "{data_dir}/{type}/{sample}.sorted.bam",
+    shell:
+        """
+        bowtie2 --threads {threads}                                                         \
+                    -x {bowtie2_index}                                                      \
+                    -1 {fastq1}                                                             \
+                    -2 {fastq2}                                                             \
+            | samtools sort -@ {threads} - > {sbam}
+        """
+
+rule add_groups:
+  input:
+    '{data_dir}/{type}/{sample}.sorted.bam'
+  output:
+    '{data_dir}/{type}/{sample}.grouped.bam'
+  shell:
+    '''
+    picard AddOrReplaceReadGroups                           \
+                I={bam}                                             \
+                O={grouped_bam}                                     \
+                RGID=4 RGLB=lib1 RGPL=illumina RGPU=unit1 RGSM=20
+    '''
+
+rule filter_reads:
+  input:
+    '{data_dir}/{type}/{sample}.grouped.bam',
+
+  output:
+    '{data_dir}/{type}/{sample}.filtered.bam'
+  shell:
+    '''
+    source /com/extra/java/8/load.sh
+            source /com/extra/GATK/3.8/load.sh
+            gatk                                            \
+                -T PrintReads                               \
+                -R {ref}                                    \
+                -I {bam}                                    \
+                -o {filtered_bam}                           \
+                -nct {cores}                                \
+                --read_filter BadCigar                      \
+                --read_filter DuplicateRead                 \
+                --read_filter FailsVendorQualityCheck       \
+                --read_filter HCMappingQuality              \
+                --read_filter MappingQualityUnavailable     \
+                --read_filter NotPrimaryAlignment           \
+                --read_filter UnmappedRead                  \
+                --filter_bases_not_stored                   \
+                --filter_mismatching_base_and_quals
+    '''
+
+rule convert_bam_to_vcf:
+  input:
+    '{data_dir}/{type}/{sample}.filtered.bam',
+  output:
+    '{data_dir}/{type}/{sample}.vcf',
+  shell:
+    '''
+    samtools index {final_bam}
+
+            samtools mpileup                                                                                                \
+                    -u -tAD                                                                                                 \
+                    -f {reference_genome}                                                                                   \
+                    -l {bed_file}                                                                                           \
+                    {final_bam} | bcftools view -v snps -m2 > {vcf}
+
+    bcftools mpileup -O u -I -a FORMAT/AD,FORMAT/ADF,FORMAT/ADR -T {bedfile} -f {fasta_file} {bamfile} \
+    | bcftools view -O u -v snps \
+    | bcftools norm -O u -m - \
+    | bcftools view -v snps
+    '''
+
+rule convert_vcf_to_tsv:
+  input:
+    '{data_dir}/{type}/{sample}.vcf',
+  output:
+    '{data_dir}/{type}/{sample}.tsv',
+  shell:
+    '''
+    less {vcf} | grep -v "^#" | cut -d$"\t" -f1,2,4,5 | sort > {tsv}
+    '''
+
+rule filter_variants:
+  input:
+    '{data_dir}/normal/{sample}.tsv',
+    '{data_dir}/tumor/{sample}.tsv',
+  output:
+    '{data_dir}/results/{sample}.tsv',
+  shell:
+    '''
+    comm -13 {tsvs[0]} {tsvs[1]} > {final_tsv}
+    '''
+
+rule create_final_vcf:
+  input:
+    '{data_dir}/results/{sample}.tsv',
+  output:
+    '{data_dir}/results/{sample}.vcf',
+  shell:
+    '''
+    <{vcfs[1]} grep "^#" > {final_vcf}
+
+        join -j1 -t$"\t" -o1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11                                                        \
+      <(<{vcfs[1]} grep -v "^#" | awk '{{print $1"-"$2"-"$4"-"$5"\t"$0}}' | sort -k1,1)                               \
+      <(<{final_tsv} awk '{{print $1"-"$2"-"$3"-"$4"\t"$0}}' | sort -k1,1)                                            \
+      >> {final_vcf}
+    '''
