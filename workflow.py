@@ -37,8 +37,8 @@ with open(tumor_fastq) as f:
 locations = [normal_fastq_lines, tumor_fastq_lines]
 
 start = 0
-# end = len(normal_fastq_lines)
-end = 1
+end = len(normal_fastq_lines)
+# end = 1
 
 for i in range(start, end):
 
@@ -138,5 +138,5 @@ for i in range(start, end):
     """
     # </editor-fold>
 
-    gwf.target_from_template(f'notify_{i}', notify('andrejbalaz001@gmail.com', final_vcf))
+gwf.target_from_template(f'notify_{i}', notify('andrejbalaz001@gmail.com', final_vcf))
 
