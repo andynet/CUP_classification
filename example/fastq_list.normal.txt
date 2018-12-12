@@ -1,1 +1,1 @@
-test1	example/test1.normal.R1.fastq.gz	example/test1.normal.R2.fastq.gz
+test1	../example/test1.normal.R1.fastq.gz	../example/test1.normal.R2.fastq.gz

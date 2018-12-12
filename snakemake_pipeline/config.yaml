@@ -1,5 +1,8 @@
-normal_file: 'example/fastq_list.normal.txt'
-tumor_file: 'example/fastq_list.tumor.txt'
-max_lines: 1
 data_dir: '../CUP_classification_data_dir'
-
+software_dir: '../software'
+normal_file: '../example/fastq_list.normal.txt'
+tumor_file: '../example/fastq_list.tumor.txt'
+reference: '../example/hg38.fa'
+max_lines: 1
+threads: 1
+bedfile: '../example/covered_regions.bed'
