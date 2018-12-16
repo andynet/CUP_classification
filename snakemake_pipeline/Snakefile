@@ -2,6 +2,9 @@ configfile: "config.yaml"
 
 include: "scripts/functions.py"
 
+wildcard_constraints:
+    type="normal|tumor"
+
 rule main:
     input:
         expand("{data_dir}/results/{sample}.vcf",
@@ -105,7 +108,7 @@ rule convert_bam_to_vcf:
         config["bedfile"],
         config["reference"],
     output:
-        "{data_dir}/{type, tumor|normal}/{sample}.vcf",
+        "{data_dir}/{type}/{sample}.vcf",
     shell:
         """
         # samtools index {input}
