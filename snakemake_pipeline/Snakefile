@@ -30,12 +30,17 @@ rule map_reads:
                 ),
     output:
         "{data_dir}/{type}/{sample}.sorted.bam",
+        temp("{data_dir}/{type}/{sample}.R1.fastq.gz"),
+        temp("{data_dir}/{type}/{sample}.R2.fastq.gz"),
     threads:
         config["threads"]
     shell:
         """
-        bwa mem -t {threads} {input[2]} {input[0]} {input[1]}   \
-        | samtools sort -@ {threads} - > {output}
+        less {input[0]} | sed 's/\.1 / /' | gzip -c > {output[1]}
+        less {input[1]} | sed 's/\.2 / /' | gzip -c > {output[2]}
+
+        bwa mem -t {threads} {input[2]} {output[1]} {output[2]}   \
+        | samtools sort -@ {threads} - > {output[0]}
         """
 
 rule add_groups:
@@ -94,7 +99,6 @@ rule filter_reads:
                 --filter_mismatching_base_and_quals
         """
 
-# finished up to this point
 rule convert_bam_to_vcf:
     input:
         "{data_dir}/{type}/{sample}.filtered.bam",
