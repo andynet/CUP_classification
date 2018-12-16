@@ -1,8 +1,8 @@
-data_dir: '../CUP_classification_data_dir'
-software_dir: '../software'
+data_dir: '../../data'
+software_dir: '../../software'
 normal_file: '../example/fastq_list.normal.txt'
 tumor_file: '../example/fastq_list.tumor.txt'
-reference: '../example/hg38.fa'
+reference: '../../data/raw/hg38.fa'
 max_lines: 1
-threads: 1
+threads: 8
 bedfile: '../example/covered_regions.bed'
