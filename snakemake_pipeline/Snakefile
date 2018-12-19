@@ -83,6 +83,8 @@ rule filter_reads:
         config["threads"]
     shell:
         """
+        samtools faidx {input[0]}
+
         source /com/extra/java/8/load.sh
         source /com/extra/GATK/3.8/load.sh
         gatk                                        \
