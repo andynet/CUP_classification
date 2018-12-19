@@ -80,10 +80,16 @@ rule filter_reads:
     output:
         "{data_dir}/{type}/{sample}.filtered.bam",
     threads:
-        config["threads"]
+        config["threads"],
+    params:
+        config["reference"].replace(".fa", ".dict")
     shell:
         """
         samtools faidx {input[1]}
+
+        picard CreateSequenceDictionary             \
+                    REFERENCE={input[1]}               \
+                    OUTPUT={params[0]}
 
         source /com/extra/java/8/load.sh
         source /com/extra/GATK/3.8/load.sh
