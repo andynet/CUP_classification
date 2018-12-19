@@ -39,3 +39,11 @@ def get_ref_base(path):
     import os
 
     return os.path.basename(path).replace('.fa', '')
+
+
+def get_indexed_reference(ref_name):
+
+    fai = ref_name + '.fai'
+    _dict = ref_name.replace('.fa', '.dict')
+
+    return fai, _dict
