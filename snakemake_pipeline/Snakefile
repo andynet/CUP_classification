@@ -85,28 +85,29 @@ rule filter_reads:
         config["reference"].replace(".fa", ".dict")
     shell:
         """
+        samtools index {input[0]}
         samtools faidx {input[1]}
 
-        picard CreateSequenceDictionary             \
-                    REFERENCE={input[1]}               \
+        picard CreateSequenceDictionary                                         \
+                    REFERENCE={input[1]}                                        \
                     OUTPUT={params[0]}
 
         source /com/extra/java/8/load.sh
         source /com/extra/GATK/3.8/load.sh
-        gatk                                        \
-            -T PrintReads                           \
-            -R {input[1]}                           \
-            -I {input[0]}                           \
-            -o {output[0]}                          \
-            -nct {threads}                          \
-            --read_filter BadCigar                  \
-            --read_filter DuplicateRead             \
-            --read_filter FailsVendorQualityCheck   \
-            --read_filter HCMappingQuality          \
-            --read_filter MappingQualityUnavailable \
-            --read_filter NotPrimaryAlignment       \
-            --read_filter UnmappedRead              \
-            --filter_bases_not_stored               \
+        gatk                                                                    \
+            -T PrintReads                                                       \
+            -R {input[1]}                                                       \
+            -I {input[0]}                                                       \
+            -o {output[0]}                                                      \
+            -nct {threads}                                                      \
+            --read_filter BadCigar                                              \
+            --read_filter DuplicateRead                                         \
+            --read_filter FailsVendorQualityCheck                               \
+            --read_filter HCMappingQuality                                      \
+            --read_filter MappingQualityUnavailable                             \
+            --read_filter NotPrimaryAlignment                                   \
+            --read_filter UnmappedRead                                          \
+            --filter_bases_not_stored                                           \
             --filter_mismatching_base_and_quals
         """
 
