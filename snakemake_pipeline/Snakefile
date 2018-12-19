@@ -59,25 +59,23 @@ rule add_groups:
                 RGID=4 RGLB=lib1 RGPL=illumina RGPU=unit1 RGSM=20
         """
 
-rule install_gatk:
-    output:
-        "{software_dir}/gatk/gatk",
-    params:
-        "{software_dir}/gatk"
-    shell:
-        """
-        wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip
-        unzip gatk-4.0.11.0.zip
-        rm gatk-4.0.11.0.zip
-        mv gatk-4.0.11.0 {params}
-        """
+#rule install_gatk:
+#    output:
+#        "{software_dir}/gatk/gatk",
+#    params:
+#        "{software_dir}/gatk"
+#    shell:
+#        """
+#        wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip
+#        unzip gatk-4.0.11.0.zip
+#        rm gatk-4.0.11.0.zip
+#        mv gatk-4.0.11.0 {params}
+#        """
 
+# system specific rule... this is not nice and should be avoided
 rule filter_reads:
     input:
         "{data_dir}/{type}/{sample}.grouped.bam",
-        expand("{software_dir}/gatk/gatk",
-                software_dir = config["software_dir"],
-                ),
         config["reference"],
     output:
         "{data_dir}/{type}/{sample}.filtered.bam",
@@ -85,21 +83,23 @@ rule filter_reads:
         config["threads"]
     shell:
         """
-        {input[1]}                                                              \
-                -T PrintReads                                                   \
-                -R {input[2]}                                                   \
-                -I {input[0]}                                                   \
-                -o {output[0]}                                                  \
-                -nct {threads}                                                  \
-                --read_filter BadCigar                                          \
-                --read_filter DuplicateRead                                     \
-                --read_filter FailsVendorQualityCheck                           \
-                --read_filter HCMappingQuality                                  \
-                --read_filter MappingQualityUnavailable                         \
-                --read_filter NotPrimaryAlignment                               \
-                --read_filter UnmappedRead                                      \
-                --filter_bases_not_stored                                       \
-                --filter_mismatching_base_and_quals
+        source /com/extra/java/8/load.sh
+        source /com/extra/GATK/3.8/load.sh
+        gatk                                        \
+            -T PrintReads                           \
+            -R {input[1]}                           \
+            -I {input[0]}                           \
+            -o {output[0]}                          \
+            -nct {threads}                          \
+            --read_filter BadCigar                  \
+            --read_filter DuplicateRead             \
+            --read_filter FailsVendorQualityCheck   \
+            --read_filter HCMappingQuality          \
+            --read_filter MappingQualityUnavailable \
+            --read_filter NotPrimaryAlignment       \
+            --read_filter UnmappedRead              \
+            --filter_bases_not_stored               \
+            --filter_mismatching_base_and_quals
         """
 
 rule convert_bam_to_vcf:
