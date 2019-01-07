@@ -109,6 +109,8 @@ rule filter_reads:
         config["threads"],
     shell:
         """
+        export LD_LIBRARY_PATH="/com/extra/slurm/LATEST/lib64:/com/extra/slurm/LATEST/lib:"
+
         source /com/extra/java/8/load.sh
         source /com/extra/GATK/3.8/load.sh
         gatk                                                                    \
@@ -137,8 +139,6 @@ rule convert_bam_to_vcf:
         "{data_dir}/{type}/{sample}.vcf",
     shell:
         """
-        # samtools index {input}
-
         bcftools mpileup -O u -I -a FORMAT/AD,FORMAT/ADF,FORMAT/ADR             \
             -T {input[1]} -f {input[2]} {input[0]}                              \
         | bcftools view -O u -v snps                                            \
