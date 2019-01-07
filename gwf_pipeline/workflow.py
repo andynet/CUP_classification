@@ -1,37 +1,41 @@
 from gwf import Workflow
-from templates import *
+import yaml
+
+# <editor-fold desc="initialization">
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
+
+data_dir = config['data_dir']
+normal_list = config['normal_list']
+tumor_list = config['tumor_list']
+reference = config['reference']
+bowtie2_index = config['bowtie2_index']
+bed_file = config['bed_file']
 
 gwf = Workflow(defaults={
     "cores": 16,
     "memory": "32g",
     "walltime": "24:00:00",
-    "nodes": None,
     "queue": "normal",
     "account": "CUP_classification",
-    "constraint": None,
-    "mail_type": None,
-    "mail_user": None,
-    "qos": None,
 })
+# </editor-fold>
 
-working_directory = '/home/andyb/CUP_classification/faststorage/Andrej'
+gwf.target(
+    name='CreateSequenceDictionary',
+    inputs=[reference],
+    outputs=[reference.replace('.fa', '.dict')],
+) << f"""
+    picard CreateSequenceDictionary                                             \
+        REFERENCE={reference}                                                   \
+        OUTPUT={reference.replace('.fa', '.dict')}
+    """
 
-normal_fastq = f'{working_directory}/inputs/normal_fastq_files.txt'
-tumor_fastq = f'{working_directory}/inputs/tumor_fastq_files.txt'
 
-reference_genome = f'{working_directory}/inputs/hg38.fa'
-bowtie2_index = f'{working_directory}/bowtie2_index/hg38'
-bed_file = f'{working_directory}/inputs/covered_regions.bed'
-
-out_dir = f'{working_directory}/outputs'
-threads = 8
-
-gwf.target_from_template('create_fasta_dict', create_fasta_dict(reference_genome))
-
-with open(normal_fastq) as f:
+with open(normal_list) as f:
     normal_fastq_lines = f.readlines()
 
-with open(tumor_fastq) as f:
+with open(tumor_list) as f:
     tumor_fastq_lines = f.readlines()
 
 locations = [normal_fastq_lines, tumor_fastq_lines]

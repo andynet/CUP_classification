@@ -86,10 +86,21 @@ rule index_reference:
                     OUTPUT={output[1]}
         """
 
+rule index_bam:
+    input:
+        "{data_dir}/{type}/{sample}.grouped.bam",
+    output:
+        "{data_dir}/{type}/{sample}.grouped.bam.bai",
+    shell:
+        """
+        samtools index {input[0]}
+        """
+
 # system specific rule... this is not nice and should be avoided
 rule filter_reads:
     input:
         "{data_dir}/{type}/{sample}.grouped.bam",
+        "{data_dir}/{type}/{sample}.grouped.bam.bai",
         config["reference"],
         get_indexed_reference(config["reference"]),
     output:
@@ -98,13 +109,11 @@ rule filter_reads:
         config["threads"],
     shell:
         """
-        samtools index {input[0]}
-
         source /com/extra/java/8/load.sh
         source /com/extra/GATK/3.8/load.sh
         gatk                                                                    \
             -T PrintReads                                                       \
-            -R {input[1]}                                                       \
+            -R {input[2]}                                                       \
             -I {input[0]}                                                       \
             -o {output[0]}                                                      \
             -nct {threads}                                                      \
